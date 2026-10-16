@@ -1,0 +1,15 @@
+# Environnement Python
+.venv/
+__pycache__/
+
+# Données produites par le pipeline (trop volumineuses pour git)
+formation_dbt/output/
+*.duckdb
+*.db
+*.parquet
+
+# Artefacts dbt
+logs/
+target/
+dbt_packages/
+.env

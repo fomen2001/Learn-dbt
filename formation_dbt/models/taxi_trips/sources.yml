@@ -4,6 +4,12 @@ sources:
   - name: tlc_taxi_trips
     config:
       meta:
-        external_location: 'https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2024-01.parquet'
+        external_location: >
+          (FROM read_parquet(
+           list_transform(
+              range(1, 13),
+              m-> 'https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2024-' || lpad(m::text, 2, '0') || '.parquet'
+           )   
+          ))
     tables:
       - name: raw_yellow_tripdata

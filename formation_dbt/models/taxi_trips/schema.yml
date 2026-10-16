@@ -1,17 +1,121 @@
-
 version: 2
 
 models:
   - name: transform
-    description: "Échantillon des courses de taxis jaunes NYC (janvier 2024)"
+    description: "Courses de taxis jaunes NYC (janvier 2024), nettoyées et enrichies : passagers > 0, distance et montant > 0, paiement carte ou espèces uniquement."
+    data_tests:
+      - dbt_expectations.expect_column_pair_values_A_to_be_greater_than_B:
+          arguments:
+            column_A: tpep_dropoff_datetime
+            column_B: tpep_pickup_datetime
+            or_equal: false
+
     columns:
+      # --- Colonnes calculées ---
+      - name: passenger_count
+        description: "Nombre de passagers (converti en BIGINT)"
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 1
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              arguments:
+                column_type: BIGINT
+
+      - name: payment_method
+        description: "Moyen de paiement en clair (issu de payment_type : 1 = carte, 2 = espèces)"
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Credit card', 'cash']
+
+      - name: trip_duration_minutes
+        description: "Durée de la course en minutes (dépose - prise en charge)"
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                strictly: true
+
+      # --- Colonnes d'origine ---
       - name: tpep_pickup_datetime
         description: "Date et heure de prise en charge"
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              arguments:
+                column_type: TIMESTAMP
+
       - name: tpep_dropoff_datetime
         description: "Date et heure de dépose"
-      - name: passenger_count
-        description: "Nombre de passagers"
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              arguments:
+                column_type: TIMESTAMP
+
       - name: trip_distance
         description: "Distance de la course (miles)"
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                strictly: true
+
+      - name: store_and_fwd_flag
+        description: "Course stockée dans le véhicule avant envoi (Y/N) — filtrée sur N"
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['N']
+
+      - name: PULocationID
+        description: "Zone TLC de prise en charge"
+        data_tests:
+          - not_null
+
+      - name: DOLocationID
+        description: "Zone TLC de dépose"
+        data_tests:
+          - not_null
+
+      - name: fare_amount
+        description: "Tarif compteur (temps + distance)"
+
+      - name: extra
+        description: "Suppléments divers (heures de pointe, nuit)"
+
+      - name: mta_tax
+        description: "Taxe MTA de 0,50 $"
+
+      - name: tip_amount
+        description: "Pourboire (renseigné uniquement pour les paiements par carte)"
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+
+      - name: tolls_amount
+        description: "Total des péages"
+
+      - name: improvement_surcharge
+        description: "Surcharge d'amélioration"
+
       - name: total_amount
-        description: "Montant total payé"
+        description: "Montant total payé (hors pourboire en espèces)"
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                strictly: true
+
+      - name: congestion_surcharge
+        description: "Surcharge de congestion (Manhattan)"
+
+      - name: Airport_fee
+        description: "Frais aéroport (prise en charge à LaGuardia ou JFK)"
