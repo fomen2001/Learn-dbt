@@ -1,0 +1,9 @@
+version: 2 #version format yml
+
+sources:
+  - name: tlc_taxi_trips
+    config:
+      meta:
+        external_location: 'https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2024-01.parquet'
+    tables:
+      - name: raw_yellow_tripdata

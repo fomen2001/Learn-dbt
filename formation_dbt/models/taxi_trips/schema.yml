@@ -1,0 +1,17 @@
+
+version: 2
+
+models:
+  - name: transform
+    description: "Échantillon des courses de taxis jaunes NYC (janvier 2024)"
+    columns:
+      - name: tpep_pickup_datetime
+        description: "Date et heure de prise en charge"
+      - name: tpep_dropoff_datetime
+        description: "Date et heure de dépose"
+      - name: passenger_count
+        description: "Nombre de passagers"
+      - name: trip_distance
+        description: "Distance de la course (miles)"
+      - name: total_amount
+        description: "Montant total payé"
